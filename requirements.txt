@@ -1,3 +1,0 @@
-requests
-flatlib==0.2.0
-pytz
