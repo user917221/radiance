@@ -5,22 +5,37 @@ from flatlib.chart import Chart
 from flatlib.datetime import Datetime
 from flatlib.geopos import GeoPos
 
-OPENCAGE_API_KEY = "588600db369441e081e630f273fa680f"
+OPENCAGE = "588600db369441e081e630f273fa680f"
 
 ZODIAC_SIGNS = [
-    ("Capricorne", (12, 22), (1, 19), "Renforcement"),
-    ("Verseau", (1, 20), (2, 18), "Transmutation"),
-    ("Poissons", (2, 19), (3, 20), "Projection"),
-    ("Bélier", (3, 21), (4, 19), "Conjuration"),
-    ("Taureau", (4, 20), (5, 20), "Matérialisation"),
-    ("Gémeaux", (5, 21), (6, 20), "Manipulation"),
-    ("Cancer", (6, 21), (7, 22), "Conjuration"),
-    ("Lion", (7, 23), (8, 22), "Renforcement"),
-    ("Vierge", (8, 23), (9, 22), "Matérialisation"),
-    ("Balance", (9, 23), (10, 22), "Manipulation"),
-    ("Scorpion", (10, 23), (11, 21), "Projection"),
-    ("Sagittaire", (11, 22), (12, 21), "Transmutation")
+    ("Capricorne", (12, 22), (1, 19)),
+    ("Verseau", (1, 20), (2, 18)),
+    ("Poissons", (2, 19), (3, 20)),
+    ("Bélier", (3, 21), (4, 19)),
+    ("Taureau", (4, 20), (5, 20)),
+    ("Gémeaux", (5, 21), (6, 20)),
+    ("Cancer", (6, 21), (7, 22)),
+    ("Lion", (7, 23), (8, 22)),
+    ("Vierge", (8, 23), (9, 22)),
+    ("Balance", (9, 23), (10, 22)),
+    ("Scorpion", (10, 23), (11, 21)),
+    ("Sagittaire", (11, 22), (12, 21))
 ]
+
+SIGN_TO_RADIANCE = {
+    "Bélier": "Renforcement",
+    "Taureau": "Matérialisation",
+    "Gémeaux": "Transmutation",
+    "Cancer": "Manipulation",
+    "Lion": "Émission",
+    "Vierge": "Matérialisation",
+    "Balance": "Manipulation",
+    "Scorpion": "Spécialisation",
+    "Sagittaire": "Émission",
+    "Capricorne": "Renforcement",
+    "Verseau": "Transmutation",
+    "Poissons": "Spécialisation"
+}
 
 SEPHIROTH_BY_MONTH = {
     1: "Binah", 2: "Chokhmah", 3: "Hesed", 4: "Guevourah",
@@ -30,7 +45,7 @@ SEPHIROTH_BY_MONTH = {
 
 def get_coords_from_city(city):
     try:
-        url = f"https://api.opencagedata.com/geocode/v1/json?q={city}&key={OPENCAGE_API_KEY}&limit=1"
+        url = f"https://api.opencagedata.com/geocode/v1/json?q={city}&key={OPENCAGE}&limit=1"
         response = requests.get(url)
         data = response.json()
         if data["results"]:
@@ -98,20 +113,14 @@ def handler(request):
         marques += 1
 
     zodiac = "Inconnu"
-    radiance = "Inconnue"
-    for sign, start, end, rad in ZODIAC_SIGNS:
+    for sign, start, end in ZODIAC_SIGNS:
         if (mois == start[0] and jour >= start[1]) or (mois == end[0] and jour <= end[1]):
             zodiac = sign
-            radiance = rad
             break
 
+    radiance = SIGN_TO_RADIANCE.get(zodiac, "Inconnue")
     ascendant = real_ascendant(jour, mois, annee, heure, lieu)
-    inhibition = "Inconnue"
-    for sign, _, _, rad in ZODIAC_SIGNS:
-        if ascendant == sign:
-            inhibition = rad
-            break
-
+    inhibition = SIGN_TO_RADIANCE.get(ascendant, "Inconnue")
     sephiroth = SEPHIROTH_BY_MONTH.get(mois, "Aucune")
 
     return {
